@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Submitting...</title></head>
+<body>
+<p>Submitting data... please wait.</p>
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO1Z8D_o9l3O03eFVD-dFanUqiQcfZTetVhyeiKLOoAjRkXF06546qlOnzrR-0o70/exec";
+const SHARED_SECRET = "Anim@jith1n";
+
+function getParams() {
+  const p = {};
+  const q = window.location.search.substring(1).split("&");
+  q.forEach(pair => {
+    const [k,v] = pair.split("=");
+    p[decodeURIComponent(k)] = v ? decodeURIComponent(v.replace(/\+/g,' ')) : "";
+  });
+  return p;
+}
+
+(async function(){
+  const params = getParams();
+  const payload = {
+    secret: SHARED_SECRET,
+    participant_id: params.pid || ("P" + Math.floor(Math.random()*10000)),
+    phq_total: params.phq || "",
+    gad_total: params.gad || "",
+    aggregated: {
+      mean_rt_negative: params.rt_neg || "",
+      mean_rt_neutral: params.rt_neu || "",
+      mean_rt_positive: params.rt_pos || "",
+      acc_negative: params.acc_neg || "",
+      acc_neutral: params.acc_neu || ""
+    }
+  };
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const resp = await res.json();
+    if (resp.status === "ok") {
+      document.body.innerHTML = "<h3>✅ Data submitted successfully. Thank you!</h3>";
+    } else {
+      document.body.innerHTML = "<h3>⚠️ Error submitting data.</h3><pre>"+JSON.stringify(resp)+"</pre>";
+    }
+  } catch (err) {
+    document.body.innerHTML = "<h3>⚠️ Error contacting server.</h3><pre>"+err+"</pre>";
+  }
+})();
+</script>
+</body></html>
